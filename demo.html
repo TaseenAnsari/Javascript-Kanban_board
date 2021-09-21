@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kanban Board</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="container-fluid p-2 bg-light">
+        <h1 class="text-info">Kanban Board</h1>
+    </div>
+    <div class="container-fluid p-1">
+        <div class="row m-2">
+            <input type="text" class="form-control col-sm-2" placeholder="Add Work" name="works" value="" on>
+            <button type="button" class="btn btn-outline-primary m-2 col-sm-1 btn-sm" style="font-size:11px"
+                onclick="addWork()">ADD WORK</button>
+        </div>
+    </div>
+    <div class="container row">
+        <h4 class="col m-2 bg-primary">To Do</h4>
+        <h4 class="col m-2 bg-secondary">In progress</h4>
+        <h4 class="col m-2 bg-success">Complete</h4>
+    </div>
+    <div class="container row">
+        <div class="container col m-2 p-4 bg-primary" id="todo" ondrop="drop(event)" ondragover="allowDrop(event)">
+        </div>
+        <div class="container col m-2 p-4 bg-secondary" id="progress" ondrop="drop(event)"
+            ondragover="allowDrop(event)">
+        </div>
+        <div class="container col m-2 p-4 bg-success" id="complete" ondrop="drop(event)" ondragover="allowDrop(event)">
+        </div>
+        <div class="container bg-danger m-2" style="opacity: 0.5;" id="deleteBox">
+            <div id="del" ondrop="del(event)" ondragover="allowDrop(event)">
+                <p style="text-align: center;">Delete</p>
+                <div>
+                </div>
+            </div>
+
+
+
+
+            <script>
+                let item = '';
+                let delItem = [];
+                let todo = [];
+                let todos = [];
+                let work = `<div class="container bg-info" id ="${todo.length}" draggable="true" ondragstart="drag(event)">
+                            <h4 class="text-body">${item}</h4>
+                        </div>`;
+                let works = '';
+                function drag(ev) {
+                    // Set the drag's format and data. Use the event target's id for the data
+                    ev.dataTransfer.setData("text/plain", ev.target.id);
+                }
+
+                function allowDrop(ev) {
+                    console.log("dragOver");
+                    ev.preventDefault();
+                }
+                function shiftData(data, ev) {
+                    if (ev.target.id == 'progress' || ev.target.id == 'complete' && todo[data]) {
+
+                        delItem.push({ 'id': data, 'workName': todo[data] });
+                        todos.splice(data, data + 1);
+                        todo.splice(data, data + 1);
+                        return data
+                    }
+                    else if (ev.target.id == 'todo') {
+                        let j = 0;
+                        console.log(todos, todo, delItem)
+                        for (i of delItem) {
+                            if (i.id == data) {
+                                todo.push(i.workName);
+                                todos.push({
+                                    'workName': i.workName, 'work': `<div class="container bg-info" id ="${todo.length - 1}" draggable="true" ondragstart="drag(event,id)">
+                                    <h4 class="text-white">${i.workName}</h4>
+                                    </div>`})
+                                delItem.splice(j, j + 1);
+                                j += 1;
+                                return todo.length - 1;
+                            }
+                        }
+
+                    }
+                    else {
+                        return data;
+                    }
+                }
+
+                function drop(ev) {
+                    console.log("Drop");
+                    ev.preventDefault();
+                    // Get the data, which is the id of the drop target
+                    let data = ev.dataTransfer.getData("text");
+                    console.log(data)
+                    data = shiftData(data, ev);
+                    console.log(data)
+                    ev.target.appendChild(document.getElementById(data));
+                    // Clear the drag data cache (for all formats/types)
+                    ev.dataTransfer.clearData();
+                }
+                function del(ev) {
+                    console.log("delete");
+                    ev.preventDefault();
+                    // Get the data, which is the id of the drop target
+                    let data = ev.dataTransfer.getData("text");
+                    ev.target.appendChild(document.getElementById(data));
+                    todos.splice(data, data + 1);
+                    todo.splice(data, data + 1);
+                    ev.target.remove(document.getElementById(data));
+                    document.getElementById('deleteBox').innerHTML = `<div id="del" ondrop="del(event)" ondragover="allowDrop(event)">
+                <p style="text-align: center;">Delete</p>
+            <div>`
+                    // Clear the drag data cache (for all formats/types)
+                    ev.dataTransfer.clearData();
+
+                }
+
+                function addWork() {
+                    works = '';
+                    item = document.getElementsByName('works')[0].value;
+                    todo.push(item);
+                    todos.push({
+                        'workName': item, 'work': `<div class="container bg-info" id ="${todo.length - 1}" draggable="true" ondragstart="drag(event,id)">
+                            <h4 class="text-white">${item}</h4>
+                        </div>`});
+                    for (let i of todos) {
+                        works += i.work;
+                    }
+                    console.log(todo, todos, delItem);
+                    document.getElementById('todo').innerHTML = works;
+                    document.getElementsByName('works')[0].value = '';
+
+                }
+
+            </script>
+</body>
+
+</html>
